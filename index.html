@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة مواقيت الصلاة</title>
 
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tahoma', Arial; }
+body {
+  height: 100vh;
+  background: url('background.jpg') center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
+.overlay {
+  background: rgba(0,0,0,0.65);
+  width: 95%;
+  max-width: 420px;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.logo {
+  max-width: 100px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+.clock {
+  font-size: 42px;
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.next {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #00ffd5;
+}
+
+.table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 18px;
+  padding: 10px 20px;
+}
+
+.prayer {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 5px;
+}
+
+.footer {
+  margin-top: 15px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+</style>
+</head>
+<body>
+
+<div class="overlay">
+  <img src="logo.png" class="logo">
+  <h1>الجمعية الخيرية مسك الختام – الڨرارم ڨوڨة</h1>
+
+  <div class="clock" id="clock">00:00:00</div>
+  <div class="next" id="nextPrayer">الصلاة القادمة</div>
+
+  <div class="table" id="prayers"></div>
+
+  <div class="footer">
+    مواقيت مسجد سلمان الفارسي – القرارم قوقة<br>
+    توقيت شتوي ثابت
+  </div>
+</div>
+
+<script>
+const prayers = [
+  {name:"الفجر", time:"05:40"},
+  {name:"الشروق", time:"07:10"},
+  {name:"الظهر", time:"12:35"},
+  {name:"العصر", time:"15:25"},
+  {name:"المغرب", time:"17:55"},
+  {name:"العشاء", time:"19:20"}
+];
+
+const container = document.getElementById("prayers");
+prayers.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "prayer";
+  div.innerHTML = `<span>${p.name}</span><span>${p.time}</span>`;
+  container.appendChild(div);
+});
+
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,"0");
+  const m = String(now.getMinutes()).padStart(2,"0");
+  const s = String(now.getSeconds()).padStart(2,"0");
+  document.getElementById("clock").innerText = `${h}:${m}:${s}`;
+
+  let next=null;
+  let diffMin=null;
+
+  prayers.forEach(p=>{
+    const [ph,pm]=p.time.split(":");
+    const pt=new Date();
+    pt.setHours(ph,pm,0,0);
+    if(pt>now){
+      const diff=(pt-now)/60000;
+      if(diffMin===null||diff<diffMin){
+        diffMin=diff;
+        next=p;
+      }
+    }
+  });
+
+  if(!next){
+    next=prayers[0];
+    const [ph,pm]=next.time.split(":");
+    const pt=new Date();
+    pt.setDate(pt.getDate()+1);
+    pt.setHours(ph,pm,0,0);
+    diffMin=(pt-now)/60000;
+  }
+
+  const hrs=Math.floor(diffMin/60);
+  const mins=Math.floor(diffMin%60);
+  document.getElementById("nextPrayer").innerText=
+    `الصلاة القادمة: ${next.name} بعد ${hrs}س ${mins}د`;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+</script>
+
+</body>
+</html>
